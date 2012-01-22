@@ -194,6 +194,11 @@ else:
 
 print "Testing using target CPUs:", target_cpus
 
+# Write record of target CPUs to file for easier post-processing
+f = open(os.path.join(logdir, "target_cpus"), 'w+')
+f.write(",".join([str(x) for x in target_cpus]))
+f.close()
+
 target_cpus_nodes = []
 zero_node = cpu_nodes[0]
 
@@ -211,15 +216,25 @@ except:
 	sys.exit(1)
 
 try:
+	print >>sys.stderr, "Running latency tests... (over %d CPUs)" % n_cpus
+	argv = ["./all_lat.sh", resultdir + "/lat", str(n_cpus - 1)]
+	print argv
+	subprocess.check_call(argv)
+except:
+	print >>sys.stderr, "At least one latency test failed. See output above for more detail."
+	sys.exit(1)
+
+try:
+	print >>sys.stderr, "Running throughput tests..."
 	argv = ["./all_thr.py", resultdir]
 	argv.extend([str(i) for i in target_cpus_nodes])
 	subprocess.check_call(argv)
 except:
-	print >>sys.stderr, "At least one test failed. See output above for more detail."
+	print >>sys.stderr, "At least one throughput test failed. See output above for more detail."
 	sys.exit(1)
 
 out_file = "%s.tar.gz" % tempdir
 subprocess.check_call(["/bin/tar", "cvfz", out_file, tempdir])
 
 print "Test succeeded. Output written as", out_file
-print "Please email that file to ipc-bench-results@cl.cam.ac.uk"
+print "Please email that file to cl-ipc-bench@lists.cam.ac.uk"

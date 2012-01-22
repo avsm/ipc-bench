@@ -1,0 +1,26 @@
+<h1>ipc-bench: Results</h1>
+
+<script>
+$(document).ready(function()
+  {
+    $("#results-table").tablesorter( {sortList: [[0,0]]} );
+  }
+);
+</script>
+
+<p>On this page, we are listing aggregated ipc-bench results collected by the community. To have your systems included on this page, <a href="running.html">run ipc-bench</a> and wait for a few days to give us a chance to pull your results into the official repository.</p>
+
+<table id="results-table" class="tablesorter">
+ <thead>
+ <tr>
+   <th>CPU model(s)</th>
+   <th># cores</th>
+   <th>NUMA (# nodes)</th>
+   <th>Operating system</th>
+   <th>Virtualized</th>
+<!--   <th>Throughput graphs</th>-->
+   <th>Details</th>
+   <th>Raw data</th>
+ </tr>
+ </thead>
+ <tbody>

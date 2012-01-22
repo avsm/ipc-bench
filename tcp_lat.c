@@ -140,7 +140,11 @@ int
 main(int argc, char *argv[])
 {
   test_t t = { 
+#ifdef USE_NODELAY
+    .name = "tcp_nodelay_lat", 
+#else
     .name = "tcp_lat", 
+#endif
     .is_latency_test = 1,
     .init_test = init_test, 
     .init_parent = init_parent,

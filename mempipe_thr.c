@@ -357,7 +357,9 @@ void parent_finish(test_data* td) {
 
   mh = rs->ringmem + mask_ring_index(rs->next_tx_offset);
   mh->size_and_flags = MH_FLAG_READY | MH_FLAG_STOP;
+#ifdef USE_FUTEX
   futex_wake(&mh->size_and_flags);
+#endif
 
   /* Wait for child to acknowledge receipt of all messages */
   while (rs->first_unacked_msg != rs->next_tx_offset) {

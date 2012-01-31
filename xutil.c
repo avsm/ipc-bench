@@ -149,12 +149,25 @@ open_logfile(test_data *td, const char *file)
 void
 dump_tsc_counters(test_data *td, unsigned long *counts, int nr_samples)
 {
-  FILE *f = open_logfile(td, "raw_tsc");
+  FILE *f = open_logfile(td, "tsc");
   double clock_freq = get_tsc_freq();
   int i;
+  double *times = (double *)counts;
+  times = calloc(sizeof(double), nr_samples);
   for (i = 0; i < nr_samples; i++)
-    fprintf(f, "%e\n", counts[i] / clock_freq);
+    times[i] = counts[i] / clock_freq;
+  free(counts);
+  summarise_samples(f, times, nr_samples);
   fclose(f);
+
+#ifdef DUMP_RAW_TSCS
+  f = open_logfile(td, "raw_tsc");
+  for (i = 0; i < nr_samples; i++)
+    fprintf(f, "%e\n", times[i]);
+  fclose(f);
+#endif
+
+  free(times);
 }
 
 static void

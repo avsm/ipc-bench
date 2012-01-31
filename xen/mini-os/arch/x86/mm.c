@@ -199,6 +199,7 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn)
     unsigned long offset;
     int count = 0;
     int rc;
+    int expected_nodes[2];
 
     pfn_to_map = 
         (start_info.nr_pt_frames - NOT_L1_FRAMES) * L1_PAGETABLE_ENTRIES;
@@ -256,6 +257,20 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn)
         pt_mfn = pte_to_mfn(page);
         offset = l1_table_offset(start_address);
 
+	{
+	    if (pfn_to_map == 0) {
+		printk("PFN 0 -> %lx\n", pfn_to_mfn(pfn_to_map));
+		expected_nodes[0] = pfn_to_mfn(pfn_to_map) >> 25;
+	    } else if (pfn_to_map == 1) {
+		printk("PFN 1 -> %lx\n", pfn_to_mfn(pfn_to_map));
+		expected_nodes[1] = pfn_to_mfn(pfn_to_map) >> 25;
+	    } else if (expected_nodes[pfn_to_map % 2] != (pfn_to_mfn(pfn_to_map) >> 25)) {
+		printk("PFN %lx -> MFN %lx\n",
+		       pfn_to_map, pfn_to_mfn(pfn_to_map));
+		expected_nodes[pfn_to_map % 2] = pfn_to_mfn(pfn_to_map) >> 25;
+	    }
+	}
+
         mmu_updates[count].ptr =
             ((pgentry_t)pt_mfn << PAGE_SHIFT) + sizeof(pgentry_t) * offset;
         mmu_updates[count].val = 
@@ -275,6 +290,7 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn)
         start_address += PAGE_SIZE;
     }
 
+    printk("Shared info MFN %lx\n", virt_to_mfn(HYPERVISOR_shared_info));
     *start_pfn = pt_pfn;
 }
 
@@ -923,13 +939,6 @@ void arch_init_mm(unsigned long* start_pfn_p, unsigned long* max_pfn_p)
 {
     unsigned long start_pfn, max_pfn;
 
-    printk("      _text: %p(VA)\n", &_text);
-    printk("     _etext: %p(VA)\n", &_etext);
-    printk("   _erodata: %p(VA)\n", &_erodata);
-    printk("     _edata: %p(VA)\n", &_edata);
-    printk("stack start: %p(VA)\n", stack);
-    printk("       _end: %p(VA)\n", &_end);
-
     /* First page follows page table pages and 3 more pages (store page etc) */
     start_pfn = PFN_UP(to_phys(start_info.pt_base)) + 
         start_info.nr_pt_frames + 3;
@@ -943,9 +952,6 @@ void arch_init_mm(unsigned long* start_pfn_p, unsigned long* max_pfn_p)
             max_pfn = 0x100000 - virt_pfns - 1;
     }
 #endif
-
-    printk("  start_pfn: %lx\n", start_pfn);
-    printk("    max_pfn: %lx\n", max_pfn);
 
     build_pagetable(&start_pfn, &max_pfn);
     clear_bootstrap();

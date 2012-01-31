@@ -28,7 +28,7 @@ static inline struct xencons_interface *xencons_interface(void)
     return mfn_to_virt(start_info.console.domU.mfn);
 } 
  
-int xencons_ring_send_no_notify(struct consfront_dev *dev, const char *data, unsigned len)
+static int _xencons_ring_send(struct consfront_dev *dev, const char *data, unsigned len, int notify)
 {	
     int sent = 0;
 	struct xencons_interface *intf;
@@ -44,26 +44,36 @@ int xencons_ring_send_no_notify(struct consfront_dev *dev, const char *data, uns
 	mb();
 	BUG_ON((prod - cons) > sizeof(intf->out));
 
-	while ((sent < len) && ((prod - cons) < sizeof(intf->out)))
-		intf->out[MASK_XENCONS_IDX(prod++, intf->out)] = data[sent++];
+	while (sent < len) {
+	    while (prod - cons >= sizeof(intf->out)) {
+		wmb();
+		intf->out_prod = prod;
+		if (!notify)
+		    return sent;
+		notify_daemon(dev);
+		cons = intf->out_cons;
+		mb();
+	    }
+	    intf->out[MASK_XENCONS_IDX(prod++, intf->out)] = data[sent++];
+	}
 
 	wmb();
 	intf->out_prod = prod;
-    
+	if (notify)
+		notify_daemon(dev);
+
     return sent;
 }
 
 int xencons_ring_send(struct consfront_dev *dev, const char *data, unsigned len)
 {
-    int sent;
+    return _xencons_ring_send(dev, data, len, 1);
+}
 
-    sent = xencons_ring_send_no_notify(dev, data, len);
-    notify_daemon(dev);
-
-    return sent;
-}	
-
-
+int xencons_ring_send_no_notify(struct consfront_dev *dev, const char *data, unsigned len)
+{
+    return _xencons_ring_send(dev, data, len, 0);
+}
 
 static void handle_input(evtchn_port_t port, struct pt_regs *regs, void *data)
 {

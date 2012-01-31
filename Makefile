@@ -11,11 +11,11 @@ TARGETS+=summarise_tsc_counters
 
 all: $(TARGETS)
 
-%_lat: atomicio.o test.o xutil.o %_lat.o
-	$(CC) $(CFLAGS) -o $@ $^ -lrt -lnuma
+%_lat: atomicio.o test.o xutil.o stats.o %_lat.o
+	$(CC) $(CFLAGS) -o $@ $^ -lrt -lnuma -lm
 
-%_thr: atomicio.o test.o xutil.o %_thr.o
-	$(CC) $(CFLAGS) -o $@ $^ -lrt -lnuma
+%_thr: atomicio.o test.o xutil.o stats.o %_thr.o
+	$(CC) $(CFLAGS) -o $@ $^ -lrt -lnuma -lm
 
 tcp_nodelay_thr.o: tcp_thr.c
 	$(CC) $(CFLAGS) $^ -c -DUSE_NODELAY -o $@
@@ -34,6 +34,8 @@ vmsplice_hugepages_coop_pipe_thr.o: vmsplice_pipe_thr.c
 
 vmsplice_coop_pipe_thr.o: vmsplice_pipe_thr.c
 	$(CC) $(CFLAGS) $^ -c -DVMSPLICE_COOP -o $@
+
+summarise_tsc_counters: summarise_tsc_counters.o stats.o
 
 clean:
 	rm -f *~ core *.o $(TARGETS)

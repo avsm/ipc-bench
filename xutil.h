@@ -36,4 +36,7 @@ void parse_args(int argc, char *argv[], bool *per_iter_timings, int *size, size_
 		int *numa_node);
 void *establish_shm_segment(int nr_pages, int numa_node);
 
+/* Doesn't really belong here, but doesn't really belong anywhere. */
+void summarise_samples(FILE *f, double *data, int nr_samples);
+
 #define PAGE_SIZE 4096

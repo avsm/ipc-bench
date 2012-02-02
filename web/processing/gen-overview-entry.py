@@ -44,7 +44,7 @@ for line in open(data_dir + "/logs/dmesg_virt").readlines():
   if r:
     virtualized_string = "no"
     break
-  r = re.search("virtual hardware", line)
+  r = re.search("(Xen|virtual hardware|virtualized system)", line)
   # need to differentiate between different forms of virtualization
   if r:
     virtualized_string = "yes"

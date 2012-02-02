@@ -217,7 +217,7 @@ except:
 
 try:
 	print >>sys.stderr, "Running latency tests... (over %d CPUs)" % n_cpus
-	argv = ["./all_lat.sh", resultdir + "/lat", str(n_cpus - 1)]
+	argv = ["./all_lat.sh", resultdir + "/lat", str(n_cpus)]
 	print argv
 	subprocess.check_call(argv)
 except:

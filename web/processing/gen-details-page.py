@@ -52,7 +52,7 @@ for line in open(data_dir + "/logs/dmesg_virt").readlines():
   if r:
     virtualized_string = "no"
     break
-  r = re.search("virtual hardware", line)
+  r = re.search("(Xen|virtual hardware|virtualized system)", line)
   # need to differentiate between different forms of virtualization
   if r:
     virtualized_string = "yes"
@@ -62,17 +62,23 @@ for line in open(data_dir + "/logs/dmesg_virt").readlines():
 os_string = "unknown"
 for line in open(data_dir + "/logs/uname").readlines():
   fields = line.split()
-  os = fields[0]
+  os_id = fields[0]
   ver = fields[1]
   arch = fields[2]
-  os_string = "%s %s, %s" % (os, ver, arch)
+  os_string = "%s %s, %s" % (os_id, ver, arch)
 
 # Generate latency graphs
-l = os.listdir(results_dir + "/lat")
-for lat_file in l:
-  print lat_file
-  argv = ["python", "plot_lat.py", results_dir + "/lat/" + lat_file, lat_file]
-  subprocess.check_call(argv)
+lat_ls = None
+try:
+  lat_ls = os.listdir(results_dir + "/lat")
+  for lat_file in lat_ls:
+    if not re.search("\.csv", lat_file):
+      continue
+    argv = ["python", "plot_lat.py", results_dir + "/lat/" + lat_file, \
+            lat_file, data_dir + "/graphs", str(len(processor_ids))]
+    subprocess.check_call(argv)
+except:
+  pass
 
 # Generate throughput graphs
 argv = ["python", "plot_thr.py", results_dir, target_cpus, "0"]
@@ -87,7 +93,7 @@ html = "<h2>Hardware overview</h2>"
 hw_string = "<table>"
 row_string = "<tr><td>%s</td><td>%s</td></tr>"
 hw_string = hw_string + row_string \
-    % ("Cores:", (str(len(processor_ids)) + ", " + model_names[0]))
+    % ("Cores (threads):", (str(len(processor_ids)) + ", " + model_names[0]))
 hw_string = hw_string + row_string % ("NUMA:", numa_string)
 hw_string = hw_string + row_string % ("Total memory:", mem_string)
 hw_string = hw_string + row_string % ("Operating system:", os_string)
@@ -98,16 +104,36 @@ html = html + hw_string
 out_html = out_html + html
 
 # Generate latency heatmap section
-html = "<h2>Latency</h2><p>To be added.</p>"
+html = "<h2>Latency</h2>"
+html = html + "<p>These graphs show the pairwise IPC latency between cores."
+html = html + "<table><tr>"
+thr_graphs_links = ""
+i = 0
+graphs_per_row = 3
+if lat_ls is None:
+  html = html + "<td><b><em>No data.</em></b></td>"
+else:
+  for t in lat_ls:
+    if not re.search("\.csv", t):
+      continue
+    graph_file = "../graphs/%s/lat_%s.png" % (name, t)
+    if i % graphs_per_row == 0:
+      html = html + "</tr><tr>"
+    html = html + "<td><a href=\"%s\"><img src=\"%s\" /></a></td>" \
+        % (graph_file, graph_file)
+    i = i + 1
 
+html = html + "</tr></table>"
 out_html = out_html + html
 
 # Generate throughput graphs section
 html = "<h2>Throughput</h2>"
 html = html + "<p>These graphs show the IPC throughput for continous " \
     "communication between a pair of cores. The y-axis shows throughput in " \
-    "Mbps, and the x-axis different chunk sizes.<br />" \
-    "<b>Click on the graphs to show a larger version.</b></p>"
+    "Gbps, and the x-axis different chunk sizes.<br />" \
+    "<b>Click on the graphs to show a larger version.</b></p>" \
+    "<p><img src=\"../images/thr_legend.png\" class=\"aleft\" " \
+    "style=\"border: none;\" /></p>"
 html = html + "<table><tr>"
 thr_graphs_links = ""
 i = 0

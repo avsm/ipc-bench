@@ -1,6 +1,5 @@
 *.o
 *_thr
 *_lat
-results
 summarise_tsc_counters
 .*.swp

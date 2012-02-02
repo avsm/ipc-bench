@@ -35,7 +35,7 @@ def get_data(filename, is_series, plot_chunksizes):
     if chunksize not in plot_chunksizes:
       continue
     safe = data[i][safe_colid]
-    throughput = data[i][throughput_colid]
+    throughput = float(data[i][throughput_colid]) / 1000.0
     maxval = max(throughput, maxval)
     if is_series:
       stddev = data[i][stddev_colid]
@@ -60,7 +60,7 @@ def autolabel(rects):
   # attach some text labels
   for rect in rects:
     height = rect.get_height()
-    ax.text(rect.get_x()+rect.get_width()/1.98, height+400, '%d'%int(height),
+    ax.text(rect.get_x()+float(rect.get_width())/2.0, height+1, '%f' % float(height),
             ha='center', va='bottom', rotation='vertical', size='x-small')
 
 # ------------------------------------------------------------------
@@ -135,7 +135,7 @@ else:
 
 # Overall maximum value (for upper y-axis limit); note that get_data may modify
 # this variable
-all_max = 10000
+all_max = 10
 
 mempipe_spin_data = get_data(mempipe_spin_filename, is_series, chunksizes)
 all_max = max(mempipe_spin_data[1], all_max)
@@ -298,8 +298,22 @@ for dst_core in cores:
   # Large version
   fig.set_size_inches(6,4)
 
-  ax.set_ylabel('Throughput [Mbps]')
-  ax.set_ylabel('Transfer size [bytes]')
+  plt.legend(bbox_to_anchor=(0, 1.0, 1.0, .102), loc=3,
+             ncol=3, mode="expand", borderaxespad=0.)
+#  ax.legend( (rects1[0], rects2[0], rects3[0], rects4[0], rects5[0], rects6[0],
+#              rects7[0], rects8[0], rects9[0], rects10[0], rects11[0]),
+#             ('mempipe_spin_unsafe', 'mempipe_spin_safe', 'mempipe_futex_unsafe',
+#              'mempipe_futex_safe', 'shmempipe_unsafe', 'shmempipe_safe',
+#              'vmsplice_coop', 'pipe', 'unix', 'tcp', 'tcp_nodelay'), loc=2 )
+  leg = plt.gca().get_legend()
+  ltext = leg.get_texts()
+  lframe = leg.get_frame()
+  lframe.set_linewidth(0)
+  plt.setp(ltext, fontsize='medium')    # the legend text fontsize
+
+
+  ax.set_ylabel('Throughput [Gbps]')
+  ax.set_xlabel('Transfer size [bytes]')
   if not is_series:
     autolabel(rects1)
     autolabel(rects2)
@@ -315,8 +329,12 @@ for dst_core in cores:
 
 #  plt.savefig(output_dir + "/core_0_to_" + str(dst_core) + ".pdf",
 #              format="pdf")
+  plt.subplots_adjust(left=0.1, right=0.95, top=0.8, bottom=0.05)
   plt.savefig(output_dir + "/core_0_to_" + str(dst_core) + ".png",
               format="png")
+
+  plt.subplots_adjust(left=0.125, right=0.9, bottom=0.1, top=0.9)
+  plt.clf()
 
 #mpl.rcParams['patch.linewidth'] = 0.5
 #plt.subplots_adjust(left=0.15, right=1.0, top=0.8, bottom=0.05)

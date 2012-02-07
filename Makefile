@@ -11,7 +11,6 @@ all_target := darwin
 endif
 
 CFLAGS = -g -Wall -O3 -D_GNU_SOURCE -DNDEBUG -std=gnu99
-LDLIBS+=-lm
 
 .PHONY: all clean run
 
@@ -42,10 +41,10 @@ all: $(TARGETS)
 	@ :
 
 %_lat: atomicio.o test.o xutil.o %_lat.o stats.o
-	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %_thr: atomicio.o test.o xutil.o %_thr.o stats.o
-	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 tcp_nodelay_thr.o: tcp_thr.c
 	$(CC) $(CFLAGS) $^ -c -DUSE_NODELAY -o $@

@@ -65,6 +65,7 @@ vmsplice_coop_pipe_thr.o: vmsplice_pipe_thr.c
 	$(CC) $(CFLAGS) $^ -c -DVMSPLICE_COOP -o $@
 
 summarise_tsc_counters: summarise_tsc_counters.o stats.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:
 	rm -f *~ core *.o $(TARGETS)

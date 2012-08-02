@@ -128,7 +128,7 @@ out_html = out_html + html
 
 # Generate throughput graphs section
 html = "<h2>Throughput</h2>"
-html = html + "<p>These graphs show the IPC throughput for continous " \
+html = html + "<p>These graphs show the IPC throughput for continuous " \
     "communication between a pair of cores. The y-axis shows throughput in " \
     "Gbps, and the x-axis different chunk sizes.<br />" \
     "<b>Click on the graphs to show a larger version.</b></p>" \

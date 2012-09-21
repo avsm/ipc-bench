@@ -7,6 +7,13 @@ import tempfile
 import subprocess
 import shutil
 import re
+import json
+import getpass
+from restkit import Resource, BasicAuth
+
+owner = "dpp23" #should be changed to "avsm"
+
+
 
 cpu_regex = re.compile("^cpu(\d+)$")
 index_regex = re.compile("^index(\d+)$")
@@ -237,4 +244,113 @@ out_file = "%s.tar.gz" % tempdir
 subprocess.check_call(["/bin/tar", "cvfz", out_file, tempdir])
 
 print "Test succeeded. Output written as", out_file
-print "Please email that file to cl-ipc-bench@lists.cam.ac.uk"
+
+path = out_file
+file_ = path[5:]
+
+git = raw_input( "Do you have a github account? Y/N" )
+
+if (git=="Y" or git=="y") is False:
+	print "Output written as", out_file
+	print "Please email that file to cl-ipc-bench@lists.cam.ac.uk"
+	sys.exit()
+
+#------------------------
+#Adding the output file to the repo and making pull request
+#------------------------
+shutil.copyfile(path, os.getcwd() + "/results/" + file_)
+
+
+user = raw_input( "Github user:" ) 
+password = getpass.getpass()
+auth = BasicAuth(user, password)
+
+
+#Getting authentication token 
+
+authreqdata = { "scopes": [ "public_repo" ], "note": "admin script" }
+
+resource = Resource('https://api.github.com/authorizations', filters=[auth])
+response = resource.post(headers={ "Content-Type": "application/json" }, payload = json.dumps(authreqdata))
+token = json.loads(response.body_string())['token']
+
+#Fork the repo
+
+resource = Resource('https://api.github.com/repos/%s/ipc-bench/forks' %owner)
+headers = {'Content-Type' : 'application/json' }
+headers['Authorization'] = 'token %s' % token
+response = resource.post(headers = headers)
+forks = json.loads(response.body_string())
+
+#Commit
+
+	#Get the SHA for the latest commit
+resource = Resource("https://api.github.com/repos/%s/ipc-bench/git/refs/heads/master" % user)
+headers = {'Content-Type' : 'application/json' }
+headers['Authorization'] = 'token %s' % token
+response = resource.get(headers = headers)
+sha_latest = json.loads(response.body_string())['object']['sha']
+
+
+	#Get the SHA for the tree
+resource = Resource("https://api.github.com/repos/%s/ipc-bench/git/commits/%s" % ( user, sha_latest ) )
+headers = {'Content-Type' : 'application/json' }
+headers['Authorization'] = 'token %s' % token
+response = resource.get(headers = headers)
+sha_tree = json.loads(response.body_string())['tree']['sha']
+
+
+print "results/" + file_
+	#Adding the file to the tree
+data = { "base_tree": sha_tree, "tree": [
+				    {
+				      "path": "results/" + file_,
+				      "mode": "160000",
+				      "type": "commit",
+				      "sha": sha_tree
+				    }
+				  ]
+       }
+resource = Resource('https://api.github.com/repos/%s/ipc-bench/git/trees ' % user)
+headers = {'Content-Type' : 'application/json' }
+headers['Authorization'] = 'token %s' % token
+response = resource.post(headers = headers, payload = json.dumps(data))
+sha_new = json.loads(response.body_string())['sha']
+
+	#Commit
+data = { "parents": [ sha_latest ], "tree": sha_new , "message": "New test data"}
+resource = Resource('https://api.github.com/repos/%s/ipc-bench/git/commits ' % user)
+headers = {'Content-Type' : 'application/json' }
+headers['Authorization'] = 'token %s' % token
+response = resource.post(headers = headers, payload = json.dumps(data))
+sha_commit = json.loads(response.body_string())['sha']
+
+	#Set head master
+data = { "sha": sha_commit, "force": True}
+resource = Resource('https://api.github.com/repos/%s/ipc-bench/git/refs/heads/master ' % user)
+headers = {'Content-Type' : 'application/json' }
+headers['Authorization'] = 'token %s' % token
+response = resource.post(headers = headers, payload = json.dumps(data))
+temp = json.loads(response.body_string())
+
+
+
+#Pull request
+
+
+
+data = {
+  		"title": "New test data",
+  		"body": "The file is " + file_,
+  		"head": "%s:master" %user,
+  		"base": "master"
+	}
+resource = Resource('https://api.github.com/repos/%s/ipc-bench/pulls ' %owner)
+headers = {'Content-Type' : 'application/json' }
+headers['Authorization'] = 'token %s' % token
+response = resource.post(headers = headers, payload = json.dumps(data))
+temp = json.loads(response.body_string())
+
+
+#------------------------
+

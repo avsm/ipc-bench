@@ -74,7 +74,7 @@ test_name = re.search("(.+)\.csv", sys.argv[2])
 plt.title(test_name.group(1))
 
 cb = plt.colorbar(shrink=1.0, format='%.3e')
-cb.set_label('Latency in microseconds')
+cb.set_label('Latency in milliseconds')
 
 #plt.savefig("lat_" + sys.argv[1] + ".pdf", format="pdf", bbox_inches='tight')
 plt.savefig(output_dir + "/lat_" + sys.argv[2] + ".png", format="png", bbox_inches='tight')

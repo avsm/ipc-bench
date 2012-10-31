@@ -11,9 +11,7 @@ import json
 import getpass
 from restkit import Resource, BasicAuth
 
-owner = "dpp23" #should be changed to "avsm"
-
-
+owner = "avsm" # github user name of the official trunk repo
 
 cpu_regex = re.compile("^cpu(\d+)$")
 index_regex = re.compile("^index(\d+)$")
@@ -353,4 +351,3 @@ temp = json.loads(response.body_string())
 
 
 #------------------------
-

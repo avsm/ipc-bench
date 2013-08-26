@@ -81,7 +81,7 @@ static void
 release_read_buf(test_data *td, struct iovec* vecs, int n_vecs) {
   pipe_state *ps = (pipe_state *)td->data;  
   assert(n_vecs == 1);
-  assert(vecs == ps->buffer);
+  assert(vecs == &ps->buffer);
 }
 
 static void child_fin(test_data *td) {
@@ -102,7 +102,7 @@ static void
 release_write_buf(test_data *td, struct iovec* vecs, int n_vecs)
 {
   pipe_state *ps = (pipe_state *)td->data;
-  assert(vecs == ps->buffer && n_vecs == 1);
+  assert(vecs == &ps->buffer && n_vecs == 1);
   xwrite(ps->fds[1], vecs[0].iov_base, vecs[0].iov_len);
 }
 

@@ -10,8 +10,6 @@ ifeq ($(uname),Darwin)
 all_target := darwin
 endif
 
-CFLAGS = -g -Wall -O3 -D_GNU_SOURCE -DNDEBUG -std=gnu99
-
 .PHONY: all clean run
 
 CFLAGS_Linux = -DUSE_INLINE_ASM -DLinux

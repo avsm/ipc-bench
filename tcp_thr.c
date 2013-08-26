@@ -127,7 +127,7 @@ static void
 release_read_buf(test_data *td, struct iovec* vecs, int n_vecs) {
   struct tcp_state *ps = (struct tcp_state *)td->data;  
   assert(n_vecs == 1);
-  assert(vecs == ps->buffer);
+  assert(vecs == &ps->buffer);
 }
 
 static struct iovec* get_write_buf(test_data *td, int len, int* n_vecs) {
@@ -141,7 +141,7 @@ static void
 release_write_buf(test_data *td, struct iovec* vecs, int n_vecs)
 {
   struct tcp_state *ps = (struct tcp_state *)td->data;
-  assert(vecs == ps->buffer && n_vecs == 1);
+  assert(vecs == &ps->buffer && n_vecs == 1);
   xwrite(ps->fd, vecs[0].iov_base, vecs[0].iov_len);
 }
 

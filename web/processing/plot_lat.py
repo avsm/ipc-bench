@@ -20,7 +20,8 @@ def get_data(filename):
     for j in range(0, len(data[i])):
       x_tmp.append(i)
       y_tmp.append(j)
-      v_tmp.append(data[i][j])
+      # * 1000000 to convert from seconds into microseconds
+      v_tmp.append(float(data[i][j]) * 1000000.0)
 
   retdata = [x_tmp, y_tmp, v_tmp]
   print len(retdata)
@@ -45,6 +46,8 @@ num_cores = int(sys.argv[4])
 output_dir = sys.argv[3]
 
 raw_data = np.loadtxt(input_file)
+# convert from seconds to microseconds
+raw_data *= 1000000.0
 data = get_data(input_file)
 
 fig = plt.figure(figsize=(3,2))
@@ -60,8 +63,10 @@ pyl.rc('font', size='8.0')
 #plt.clf()
 #plt.imshow(heatmap, extent=extent)
 
-if fix_scale != 0:
-  plt.matshow(raw_data, vmax=0.0001, vmin=0.00001, fignum=0)
+test_name = re.search("(.+)\.csv", sys.argv[2])
+if fix_scale != 0 or test_name.group(1) == 'mempipe_lat':
+  # 10 to 100 us
+  plt.matshow(raw_data, vmax=10, vmin=0, fignum=0)
 else:
   plt.matshow(raw_data, fignum=0)
 
@@ -70,10 +75,9 @@ plt.ylabel('Core ID')
 plt.ylim(-0.5, int(sys.argv[4])-0.5)
 plt.xlabel('Core ID')
 plt.xlim(-0.5, int(sys.argv[4])-0.5)
-test_name = re.search("(.+)\.csv", sys.argv[2])
 plt.title(test_name.group(1))
 
-cb = plt.colorbar(shrink=1.0, format='%.3e')
+cb = plt.colorbar(shrink=1.0, format='%.2f')
 cb.set_label('Latency in microseconds')
 
 #plt.savefig("lat_" + sys.argv[1] + ".pdf", format="pdf", bbox_inches='tight')

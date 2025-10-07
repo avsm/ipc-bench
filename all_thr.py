@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # This script runs the following battery of tests:
 # Chunk sizes: 64, 4096, 65536

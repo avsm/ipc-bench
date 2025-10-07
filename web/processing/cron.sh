@@ -3,7 +3,7 @@
 CUR_DIR=$(pwd)
 
 RESULTS_DIR=../../results
-OUT_DIR=/usr/groups/netos/html/ipc-bench
+OUT_DIR=/home/avsm2/web
 HTML_OUTFILE=results.html
 
 cd ${RESULTS_DIR}
@@ -29,14 +29,14 @@ for r in ${RESULTS}; do
   TARGET_CPUS=$(cat ${DIR}/logs/target_cpus)
 
   # Now generate the results overview page
-  python gen-overview-entry.py ${DIR} ${OUT_DIR}/${HTML_OUTFILE}.new \
+  python3 gen-overview-entry.py ${DIR} ${OUT_DIR}/${HTML_OUTFILE}.new \
     ${TARGET_CPUS} ${NAME}
 
   # Generate details page
   mkdir -p ${OUT_DIR}/details
   mkdir -p ${DIR}/graphs
   cat ${PWD}/html_head.tmpl > ${OUT_DIR}/details/${NAME}.html
-  python gen-details-page.py ${DIR} ${OUT_DIR}/details ${TARGET_CPUS} ${NAME}
+  python3 gen-details-page.py ${DIR} ${OUT_DIR}/details ${TARGET_CPUS} ${NAME}
   cat ${PWD}/html_foot.tmpl >> ${OUT_DIR}/details/${NAME}.html
 
   # Move graphs

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -8,9 +8,9 @@ import subprocess
 import shutil
 import re
 
-cpu_regex = re.compile("^cpu(\d+)$")
-index_regex = re.compile("^index(\d+)$")
-node_regex = re.compile("^node(\d+)$")
+cpu_regex = re.compile(r"^cpu(\d+)$")
+index_regex = re.compile(r"^index(\d+)$")
+node_regex = re.compile(r"^node(\d+)$")
 
 index_files = ["coherency_line_size", "level", "number_of_sets", "physical_line_partition",
 	       "shared_cpu_list", "size", "type", "ways_of_associativity"]
@@ -41,7 +41,7 @@ tempdir = tempfile.mkdtemp()
 logdir = os.path.join(tempdir, "logs")
 resultdir = os.path.join(tempdir, "results")
 
-print "Writing output to", tempdir
+print("Writing output to", tempdir)
 
 os.mkdir(logdir)
 os.mkdir(resultdir)
@@ -64,7 +64,7 @@ cpu_dirs = None
 try:
 	cpu_dirs = os.listdir("/sys/devices/system/cpu")
 except:
-	print >>sys.stderr, "Can't read /sys/devices/system/cpu"
+	print("Can't read /sys/devices/system/cpu", file=sys.stderr)
 
 if cpu_dirs is not None:
 	copy_dir = os.path.join(logdir, "sys-cpu")
@@ -90,7 +90,7 @@ if cpu_dirs is not None:
 							shutil.copyfile(os.path.join(index_source_dir, f),
 									os.path.join(index_dest_dir, f))
 						except:
-							print >>stderr, "Couldn't copy", os.path.join(index_source_dir, f)
+							print("Couldn't copy", os.path.join(index_source_dir, f), file=sys.stderr)
 					if this_cpu_id == 0:
 						with open(os.path.join(index_source_dir, "shared_cpu_list"), "r") as f:
 							this_sharing_cpus = parse_list(f.read())
@@ -115,7 +115,7 @@ node_dirs = None
 try:
 	node_dirs = os.listdir("/sys/devices/system/node")
 except:
-	print >>sys.stderr, "Can't read /sys/devices/system/node"
+	print("Can't read /sys/devices/system/node", file=sys.stderr)
 
 n_nodes = 0
 cpu_nodes = dict()
@@ -137,7 +137,7 @@ if node_dirs is not None:
 				try:
 					shutil.copyfile(copy_from, copy_to)
 				except:
-					print >>sys.stderr, "Couldn't copy", copy_from
+					print("Couldn't copy", copy_from, file=sys.stderr)
 			with open(os.path.join(node_source_dir, "cpulist"), "r") as f:
 				node_cpus = parse_list(f.read())
 				for cpu in node_cpus:
@@ -148,13 +148,13 @@ for n in range(n_cpus):
 		cpu0_shared_caches[n] = "memory"
 
 if n_cpus == 0:
-	print "Don't know how many CPUs we have, assuming 1"
+	print("Don't know how many CPUs we have, assuming 1")
 	n_cpus = 1
 	cpu_sockets[0] = 0
 	cpu_ht_partners[0] = [0]
-	
+
 if n_nodes == 0:
-	print "Don't know how many NUMA nodes we have, assuming 1 (UMA)"
+	print("Don't know how many NUMA nodes we have, assuming 1 (UMA)")
 	n_nodes = 1
 	for x in range(n_cpus):
 		cpu_nodes[x] = 0
@@ -163,10 +163,10 @@ if n_nodes == 0:
 # If not, target the CPU's HT sibling if it exists.
 # Then target a sample of each unique (numa-node, physical-socket, lowest-shared-cache-level) triple.
 
-print "Detected system topology:"
+print("Detected system topology:")
 
 for i in range(n_cpus):
-	print "CPU %d: socket %d, node %d, best CPU0 shared cache level: %s" % (i, cpu_sockets[i], cpu_nodes[i], cpu0_shared_caches[i])
+	print("CPU %d: socket %d, node %d, best CPU0 shared cache level: %s" % (i, cpu_sockets[i], cpu_nodes[i], cpu0_shared_caches[i]))
 
 target_cpus = []
 
@@ -192,7 +192,7 @@ else:
 			taken_locs.add(this_loc)
 			target_cpus.append(i)
 
-print "Testing using target CPUs:", target_cpus
+print("Testing using target CPUs:", target_cpus)
 
 # Write record of target CPUs to file for easier post-processing
 f = open(os.path.join(logdir, "target_cpus"), 'w+')
@@ -212,29 +212,29 @@ for i in target_cpus:
 try:
 	subprocess.check_call(["make"])
 except:
-	print >>sys.stderr, "Make failed -- check you have libnuma headers and libraries available"
+	print("Make failed -- check you have libnuma headers and libraries available", file=sys.stderr)
 	sys.exit(1)
 
 try:
-	print >>sys.stderr, "Running latency tests... (over %d CPUs)" % n_cpus
+	print("Running latency tests... (over %d CPUs)" % n_cpus, file=sys.stderr)
 	argv = ["./all_lat.sh", resultdir + "/lat", str(n_cpus)]
-	print argv
+	print(argv)
 	subprocess.check_call(argv)
 except:
-	print >>sys.stderr, "At least one latency test failed. See output above for more detail."
+	print("At least one latency test failed. See output above for more detail.", file=sys.stderr)
 	sys.exit(1)
 
 try:
-	print >>sys.stderr, "Running throughput tests..."
+	print("Running throughput tests...", file=sys.stderr)
 	argv = ["./all_thr.py", resultdir]
 	argv.extend([str(i) for i in target_cpus_nodes])
 	subprocess.check_call(argv)
 except:
-	print >>sys.stderr, "At least one throughput test failed. See output above for more detail."
+	print("At least one throughput test failed. See output above for more detail.", file=sys.stderr)
 	sys.exit(1)
 
 out_file = "%s.tar.gz" % tempdir
 subprocess.check_call(["/bin/tar", "cvfz", out_file, tempdir])
 
-print "Test succeeded. Output written as", out_file
-print "Please email that file to cl-ipc-bench@lists.cam.ac.uk"
+print("Test succeeded. Output written as", out_file)
+print("Please email that file to cl-ipc-bench@lists.cam.ac.uk")

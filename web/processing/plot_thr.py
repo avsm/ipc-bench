@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys, os
 
 import matplotlib as mpl
@@ -11,7 +12,12 @@ def get_data(filename, is_series, plot_chunksizes):
   chunksize_colid = 3
   safe_colid = 6
 
-#  print "%s %d" % (filename, is_series)
+#  print("%s %d" % (filename, is_series))
+
+  # Check if file exists - if not, return empty data
+  if not os.path.exists(filename):
+    print("Warning: %s not found, skipping" % filename)
+    return ({}, 0)
 
   if is_series:
     data = np.loadtxt(filename,
@@ -25,7 +31,7 @@ def get_data(filename, is_series, plot_chunksizes):
   retdata = {}
   maxval = 0
   for i in range(len(data)):
-#    print "%d: %f (safe: %d, chunksize: %d)" % (data[i][dst_core_colid],
+#    print("%d: %f (safe: %d, chunksize: %d)" % (data[i][dst_core_colid],
 #                                                data[i][throughput_colid],
 #                                                data[i][safe_colid],
 #                                                data[i][chunksize_colid])
@@ -48,12 +54,12 @@ def get_data(filename, is_series, plot_chunksizes):
 
 def get_series(data, dst_core, safe=1):
   values = [v[0] for c, v in data[dst_core][safe].items()]
-#  print str(dst_core) + ": " + str(values)
+#  print(str(dst_core) + ": " + str(values))
   return values
 
 def get_stddev_series(data, dst_core, safe=1):
   values = [v[1] for c, v in data[dst_core][safe].items()]
-#  print str(dst_core) + ": " + str(values)
+#  print(str(dst_core) + ": " + str(values))
   return values
 
 def autolabel(rects):
@@ -80,7 +86,7 @@ n_groups = len(chunksizes)  # number of chunk sizes
 # Handle command line args
 
 if len(sys.argv) < 3:
-  print "usage: python plot_thr.py <results directory> <target_cpus> <is_series: (0|1)> [filenames ...]"
+  print("usage: python plot_thr.py <results directory> <target_cpus> <is_series: (0|1)> [filenames ...]")
   sys.exit(0)
 
 res_dir = sys.argv[1]
@@ -217,7 +223,7 @@ for dst_core in cores:
   width = 0.8 / n_bars       # the width of the bars
 
 #  subplot_id = str(len(cores) / 2) + str(2) + str(fig_idx)
-#  print subplot_id
+#  print(subplot_id)
 #  ax = fig.add_subplot(subplot_id)
   plt.clf()
   ax = fig.add_subplot(111)
@@ -261,7 +267,7 @@ for dst_core in cores:
 #  ax.set_ylabel('Throughput [Mbps]')
 
   # set frame width to 0.5 for subplot
-  [i.set_linewidth(0.5) for i in ax.spines.itervalues()]
+  [i.set_linewidth(0.5) for i in ax.spines.values()]
 
   plt.ylim(0, all_max)
 

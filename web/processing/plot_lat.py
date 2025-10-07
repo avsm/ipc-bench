@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys, os
 
 import matplotlib
@@ -23,7 +24,7 @@ def get_data(filename):
       v_tmp.append(data[i][j])
 
   retdata = [x_tmp, y_tmp, v_tmp]
-  print len(retdata)
+  print(len(retdata))
   return retdata
 
 
@@ -31,7 +32,7 @@ def get_data(filename):
 # Handle command line args
 
 if len(sys.argv) < 2:
-  print "usage: python plot_lat.py <input file> <title> <output_dir> <num_cores> [fix-scale]"
+  print("usage: python plot_lat.py <input file> <title> <output_dir> <num_cores> [fix-scale]")
   sys.exit(0)
 
 input_file = sys.argv[1]
@@ -50,7 +51,7 @@ data = get_data(input_file)
 fig = plt.figure(figsize=(3,2))
 pyl.rc('font', size='8.0')
 #f = pylab.Figure(figsize=(2,1.5))
-#  print ds
+#  print(ds)
 #heatmap, xedges, yedges = np.histogram2d(data[0], data[1], bins=48, weights=data[2])
 #extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
 
@@ -70,7 +71,7 @@ plt.ylabel('Core ID')
 plt.ylim(-0.5, int(sys.argv[4])-0.5)
 plt.xlabel('Core ID')
 plt.xlim(-0.5, int(sys.argv[4])-0.5)
-test_name = re.search("(.+)\.csv", sys.argv[2])
+test_name = re.search(r"(.+)\.csv", sys.argv[2])
 plt.title(test_name.group(1))
 
 cb = plt.colorbar(shrink=1.0, format='%.3e')

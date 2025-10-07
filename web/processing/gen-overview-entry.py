@@ -1,4 +1,4 @@
-#!/usr/env/python
+#!/usr/bin/env python3
 import sys, os
 import re
 import subprocess
@@ -11,8 +11,8 @@ name = sys.argv[4]
 
 github_user = "ms705"
 
-print "Processing data in %s" % data_dir
-print "Target CPUs are: %s" % target_cpus.split(",")
+print("Processing data in %s" % data_dir)
+print("Target CPUs are: %s" % target_cpus.split(","))
 
 processor_ids = []
 model_names = []

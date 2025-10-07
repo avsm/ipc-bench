@@ -1,4 +1,4 @@
-#!/usr/env/python
+#!/usr/bin/env python3
 import sys, os
 import re
 import subprocess
@@ -12,7 +12,7 @@ outfile = out_dir + "/" + name + ".html"
 
 github_user = "ms705"
 
-print "Generating details page for %s" % name
+print("Generating details page for %s" % name)
 #print "Target CPUs are: %s" % target_cpus.split(",")
 
 processor_ids = []
@@ -72,16 +72,16 @@ lat_ls = None
 try:
   lat_ls = os.listdir(results_dir + "/lat")
   for lat_file in lat_ls:
-    if not re.search("\.csv", lat_file):
+    if not re.search(r"\.csv", lat_file):
       continue
-    argv = ["python", "plot_lat.py", results_dir + "/lat/" + lat_file, \
+    argv = ["python3", "plot_lat.py", results_dir + "/lat/" + lat_file, \
             lat_file, data_dir + "/graphs", str(len(processor_ids))]
     subprocess.check_call(argv)
 except:
   pass
 
 # Generate throughput graphs
-argv = ["python", "plot_thr.py", results_dir, target_cpus, "0"]
+argv = ["python3", "plot_thr.py", results_dir, target_cpus, "0"]
 subprocess.check_call(argv)
 
 out_html = "<p style=\"background-color: lightgray;\"><b>" \
@@ -114,7 +114,7 @@ if lat_ls is None:
   html = html + "<td><b><em>No data.</em></b></td>"
 else:
   for t in lat_ls:
-    if not re.search("\.csv", t):
+    if not re.search(r"\.csv", t):
       continue
     graph_file = "../graphs/%s/lat_%s.png" % (name, t)
     if i % graphs_per_row == 0:
